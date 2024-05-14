@@ -8,4 +8,4 @@ This means that the game becomes much more unpredictable than traditional chess.
 
 I wanted to develop an interesting (while perhaps impractical) web game. Chess seemed like a fun choice and so Metamorph Chess was born.
 
-I used [chessboardjs.com] and [https://github.com/zeyu2001/chess-ai] to make this project possible. 
+I used https://chessboardjs.com and https://github.com/zeyu2001/chess-ai to make this project possible. 
