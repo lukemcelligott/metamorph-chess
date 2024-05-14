@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Metamorph-Chess</title>
+    
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="./styles.css">
+
+    <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="js/chessboard-1.0.0.min.js"></script>
+
+    <script src="./js/chess.js"></script>
+  </head>
+  <body>
+    <!-- board -->
+    <div class="split left">
+      <div class="centered">
+        <div id="board1" style="width: 650px"></div>
+      </div>
+    </div>
+
+    <!-- card -->
+    <div class="split right">
+      <div class="card text-center centered" style="width: 65%;">
+          <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs">
+                  <li class="nav-item">
+                      <a class="nav-link active" aria-current="true" href="#" id="playTab">Play</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="#" id="howToPlayTab">How to play</a>
+                  </li>
+              </ul>
+          </div>
+          <div class="card-body" id="content">
+            <p class="card-text">I want to play as...</p>
+            <!-- player color selection -->
+            <div class="squares">
+              <div class="square white-square" id="whiteSquare"></div>
+              <div class="square black-square" id="blackSquare"></div>
+              <div class="square half-square" id="halfSquare"></div>
+            </div>
+            <p class="card-text" style="margin-top: 3%;">against...</p>
+            <!-- opponenet selection -->
+            <div>
+              <div class="opponent">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Myself
+                </label>
+              </div>
+              <div class="opponent">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Friend
+                </label>
+              </div>
+              <div class="opponent">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Computer
+                </label>
+              </div>
+            </div>
+            <!-- buttons -->
+            <div class="ctrl-buttons">
+              <button type="button" class="btn btn-primary" id="startBtn">Start game</button>
+              <button type="button" class="btn btn-primary" id="clearBtn">Clear game</button>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <script>
+      // card data
+      function handleTabClick(tabId, content) {
+          document.getElementById(tabId).addEventListener('click', function(event) {
+              event.preventDefault(); // Prevent default link behavior
+              
+              // Remove 'active' class from all tabs
+              var tabs = document.querySelectorAll('.nav-link');
+              tabs.forEach(function(tab) {
+                  tab.classList.remove('active');
+              });
+              
+              // Add 'active' class to the clicked tab
+              this.classList.add('active');
+              
+              // Replace content based on the clicked tab
+              document.getElementById('content').innerHTML = content;
+          });
+      }
+
+      let playContent = `
+        <p class="card-text">I want to play as...</p>
+        <!-- player color selection -->
+        <div>
+          <p class="card-text">White, black, random</p>
+        </div>
+        <!-- buttons -->
+        <div class="ctrl-buttons">
+          <button type="button" class="btn btn-primary" id="startBtn">Start game</button>
+          <button type="button" class="btn btn-primary" id="clearBtn">Clear game</button>
+        </div>
+      `;
+
+      var howToPlayContent = `
+        <h5>How to play</h5>
+        <p>Metamorph-Chess puts a new spin on the classic chess game!</p>
+        <p>This variation of chess adds an unpredictable twist where the pieces transform into another random piece after it is moved. This leads to much more exciting games to play against your friends or the computer!</p>
+      `;
+
+      // Call the function for each navigation link
+      handleTabClick('playTab', playContent);
+      handleTabClick('howToPlayTab', howToPlayContent);
+
+      let playerColor = 'white';
+      
+      function handleSquareClick(squareId) {
+        let square = document.getElementById(squareId);
+        square.addEventListener('click', function() {
+            // Remove 'clicked' class from all squares
+            let squares = document.querySelectorAll('.square');
+            squares.forEach(function(square) {
+                square.classList.remove('clicked');
+            });
+
+            // Add 'clicked' class to the clicked square
+            square.classList.add('clicked');
+
+            if (squareId === 'whiteSquare') {
+                playerColor = 'white';
+            } else if (squareId === 'blackSquare') {
+                playerColor = 'black';
+            } else if (squareId === 'halfSquare') {
+                playerColor = 'half';
+            }
+            updateConfigWithPlayerColor();
+            board.destroy();
+            board = Chessboard('board1', config);
+        });
+      }
+
+      // Call the function for each square
+      handleSquareClick('whiteSquare');
+      handleSquareClick('blackSquare');
+      handleSquareClick('halfSquare');
+
+      let board = null
+      let game = new Chess()
+      let whiteSquareGrey = '#a9a9a9'
+      let blackSquareGrey = '#696969'
+
+      function removeGreySquares () {
+        $('#board1 .square-55d63').css('background', '')
+      }
+
+      function greySquare (square) {
+        let $square = $('#board1 .square-' + square)
+
+        let background = whiteSquareGrey
+        if ($square.hasClass('black-3c85d')) {
+          background = blackSquareGrey
+        }
+
+        $square.css('background', background)
+      }
+
+      function onDragStart (source, piece) {
+        // do not pick up pieces if the game is over
+        if (game.game_over()) return false
+
+        // or if it's not that side's turn
+        if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+            (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+          return false
+        }
+      }
+
+      function onDrop (source, target, piece) {
+        removeGreySquares()
+
+        let currentColor = game.turn();
+
+        // see if the move is legal
+        let move = game.move({
+          from: source,
+          to: target,
+          promotion: 'q'
+        })
+
+        // check for valid move
+        if (move !== null) {
+          let randomPiece = getRandomPiece(game.turn()); // get a random chess piece
+          game.remove(piece); // Remove the pawn from the original position
+          game.put({ type: randomPiece, color: currentColor }, target); // place the random piece
+
+          // reset the board with the random piece
+          board.destroy();
+          board = Chessboard('board1', {
+            draggable: true,
+            position: game.fen(),
+            orientation: playerColor,
+            onDrop: onDrop,
+            onMouseoutSquare: onMouseoutSquare,
+            onMouseoverSquare: onMouseoverSquare,
+            onSnapEnd: onSnapEnd
+          });
+            
+        } else {
+            return 'snapback';
+        }
+
+        board.position(game.fen())
+      }
+
+      function getRandomPiece(color) {
+          // possible pieces (in scale to original piece numbers)
+          let pieces = ['q', 'r', 'r', 'b', 'b', 'n', 'n', 'p' ,'p', 'p', 'p', 'p', 'p', 'p', 'p'];
+          return pieces[Math.floor(Math.random() * pieces.length)];
+      }
+
+      function onMouseoverSquare (square, piece) {
+        // get list of possible moves for this square
+        let moves = game.moves({
+          square: square,
+          verbose: true
+        })
+
+        // exit if there are no moves available for this square
+        if (moves.length === 0) return
+
+        // highlight the square they moused over
+        greySquare(square)
+
+        // highlight the possible squares for this piece
+        for (let i = 0; i < moves.length; i++) {
+          greySquare(moves[i].to)
+        }
+      }
+
+      function onMouseoutSquare (square, piece) {
+        removeGreySquares()
+      }
+
+      function onSnapEnd () {
+        board.position(game.fen())
+      }
+
+      function onMouseoverSquare (square, piece) {
+        // get list of possible moves for this square
+        var moves = game.moves({
+          square: square,
+          verbose: true
+        })
+
+        // exit if there are no moves available for this square
+        if (moves.length === 0) return
+
+        // highlight the square they moused over
+        greySquare(square)
+
+        // highlight the possible squares for this piece
+        for (var i = 0; i < moves.length; i++) {
+          greySquare(moves[i].to)
+        }
+      }
+
+      function onMouseoutSquare (square, piece) {
+        removeGreySquares()
+      }
+
+      function updateStatus () {
+        var status = ''
+
+        var moveColor = 'White'
+        if (game.turn() === 'b') {
+          moveColor = 'Black'
+        }
+
+        // checkmate?
+        if (game.in_checkmate()) {
+          status = 'Game over, ' + moveColor + ' is in checkmate.'
+        }
+
+        // draw?
+        else if (game.in_draw()) {
+          status = 'Game over, drawn position'
+        }
+
+        // game still on
+        else {
+          status = moveColor + ' to move'
+
+          // check?
+          if (game.in_check()) {
+            status += ', ' + moveColor + ' is in check'
+          }
+        }
+
+        $status.html(status)
+        $fen.html(game.fen())
+        $pgn.html(game.pgn())
+      }
+
+      function updateConfigWithPlayerColor() {
+          config.orientation = playerColor;
+      }
+
+      let config = {
+        draggable: true,
+        onDragStart: onDragStart,
+        orientation: playerColor,
+        onDrop: onDrop,
+        onMouseoutSquare: onMouseoutSquare,
+        onMouseoverSquare: onMouseoverSquare,
+        onSnapEnd: onSnapEnd
+      }
+
+      board = Chessboard('board1', config)
+
+      $('#startBtn').on('click', function() {
+        board.start();
+      })
+      $('#clearBtn').on('click', function() {
+        board.clear();
+        
+      })
+
+    </script>
+    
+  </body>
+</html>
