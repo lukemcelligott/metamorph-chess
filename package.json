@@ -2,6 +2,7 @@
   "author": "Chris Oakman <chris@oakmac.com> (http://chrisoakman.com/)",
   "name": "@chrisoakman/chessboardjs",
   "description": "JavaScript chessboard widget",
+  "main": "chess.html",
   "homepage": "https://chessboardjs.com",
   "license": "MIT",
   "version": "1.0.0",
@@ -13,6 +14,7 @@
     "dist/"
   ],
   "dependencies": {
+    "build": "^0.1.4",
     "chess.js": "^1.0.0-beta.8",
     "jquery": ">=3.4.1",
     "js-chess-engine": "^1.0.2"
@@ -22,6 +24,7 @@
     "fs-plus": "3.1.1",
     "kidif": "1.1.0",
     "mustache": "2.3.0",
+    "parcel": "^2.12.0",
     "standard": "10.0.2",
     "uglify-js": "3.6.0"
   },
