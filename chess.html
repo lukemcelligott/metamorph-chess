@@ -42,25 +42,19 @@
             <div class="squares">
               <div class="square white-square" id="whiteSquare"></div>
               <div class="square black-square" id="blackSquare"></div>
-              <div class="square half-square" id="halfSquare"></div>
+              <div class="square half-square" id="randomSquare"></div>
             </div>
             <p class="card-text" style="margin-top: 3%;">against...</p>
             <!-- opponenet selection -->
             <div>
               <div class="opponent">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="myself" checked>
                 <label class="form-check-label" for="flexRadioDefault1">
                   Myself
                 </label>
               </div>
               <div class="opponent">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                <label class="form-check-label" for="flexRadioDefault1">
-                  Friend
-                </label>
-              </div>
-              <div class="opponent">
-                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="computer">
                 <label class="form-check-label" for="flexRadioDefault1">
                   Computer
                 </label>
@@ -76,6 +70,7 @@
     </div>
 
     <script>
+
       // card data
       function handleTabClick(tabId, content) {
           document.getElementById(tabId).addEventListener('click', function(event) {
@@ -118,7 +113,7 @@
       handleTabClick('playTab', playContent);
       handleTabClick('howToPlayTab', howToPlayContent);
 
-      let playerColor = 'white';
+      let playerColor;
       
       function handleSquareClick(squareId) {
         let square = document.getElementById(squareId);
@@ -136,9 +131,12 @@
                 playerColor = 'white';
             } else if (squareId === 'blackSquare') {
                 playerColor = 'black';
-            } else if (squareId === 'halfSquare') {
-                playerColor = 'half';
+            } else if (squareId === 'randomSquare') {
+              // get a random color
+              let randomNum = Math.random();
+              playerColor = randomNum < 0.5 ? 'white' : 'black';
             }
+            console.log("Player color: " + playerColor)
             updateConfigWithPlayerColor();
             board.destroy();
             board = Chessboard('board1', config);
@@ -148,7 +146,17 @@
       // Call the function for each square
       handleSquareClick('whiteSquare');
       handleSquareClick('blackSquare');
-      handleSquareClick('halfSquare');
+      handleSquareClick('randomSquare');
+
+      let opponentType = 'myself';
+
+      document.querySelectorAll('input[name="flexRadioDefault"]').forEach(function(radio) {
+          radio.addEventListener('change', function() {
+              // Update the opponent type based on the selected radio button
+              opponentType = this.value;
+              console.log("Opponenet type: " + opponentType)
+          });
+      });
 
       let board = null
       let game = new Chess()
@@ -216,6 +224,8 @@
         }
 
         board.position(game.fen())
+
+        computerMove();
       }
 
       function getRandomPiece(color) {
@@ -275,9 +285,9 @@
       }
 
       function updateStatus () {
-        var status = ''
+        let status = ''
 
-        var moveColor = 'White'
+        let moveColor = 'White'
         if (game.turn() === 'b') {
           moveColor = 'Black'
         }
@@ -311,6 +321,53 @@
           config.orientation = playerColor;
       }
 
+      // start test
+
+      function computerMove() {
+        if (opponentType === 'computer') {
+          // Check if it's black player's turn
+          if ((playerColor === 'white' && game.turn() === 'b') || (playerColor === 'black' && game.turn() === 'w')) {
+            // all legal moves for the player's color
+            const moves = game.moves({ verbose: true });
+
+            // If there are no legal moves, the game is over
+            if (moves.length === 0) {
+                console.log('Game over');
+                return;
+            }
+
+            // Choose a random move
+            const randomIndex = Math.floor(Math.random() * moves.length);
+            const randomMove = moves[randomIndex];
+
+            // Make the chosen move
+            game.move(randomMove);
+
+            board.position(game.fen())
+
+            board.destroy();
+            board = Chessboard('board1', {
+              draggable: true,
+              position: game.fen(),
+              orientation: playerColor === 'w' ? 'white' : 'black',
+              onDrop: onDrop,
+              onMouseoutSquare: onMouseoutSquare,
+              onMouseoverSquare: onMouseoverSquare,
+              onSnapEnd: onSnapEnd
+            });
+
+            board.position(game.fen())
+
+            // debugging
+            console.log('Bot moves:', randomMove.from, 'to', randomMove.to);
+            console.log(game.ascii());
+            // }
+          }
+        }
+      }
+
+      // end test
+
       let config = {
         draggable: true,
         onDragStart: onDragStart,
@@ -325,10 +382,13 @@
 
       $('#startBtn').on('click', function() {
         board.start();
+        if (playerColor === 'black') {
+          computerMove();
+        }
       })
       $('#clearBtn').on('click', function() {
         board.clear();
-        
+        game.reset();
       })
 
     </script>
