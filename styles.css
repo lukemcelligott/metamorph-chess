@@ -4,6 +4,7 @@ body {
 }
 
 .split {
+    display: flex;
     height: 100%;
     width: 50%;
     position: fixed;
@@ -19,6 +20,12 @@ body {
 
 .right {
     right: 0;
+}
+
+@media only screen and (max-width: 600px) {
+    .split {
+        flex-direction: row;
+    }
 }
 
 .squares {

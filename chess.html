@@ -32,7 +32,7 @@
     <!-- board -->
     <div class="split left">
       <div class="centered">
-        <div id="board1" style="width: 650px"></div>
+        <div id="board1" style="width: 30vw"></div>
       </div>
     </div>
 
@@ -330,44 +330,46 @@
       }
 
       function computerMove() {
-        if (opponentType === 'computer') {
-          // check for turn
-          if ((playerColor === 'white' && game.turn() === 'b') || (playerColor === 'black' && game.turn() === 'w')) {
-            // all legal moves for the player's color
-            const moves = game.moves({ verbose: true });
+        setTimeout(function() {
+          if (opponentType === 'computer') {
+            // check for turn
+            if ((playerColor === 'white' && game.turn() === 'b') || (playerColor === 'black' && game.turn() === 'w')) {
+              // all legal moves for the player's color
+              const moves = game.moves({ verbose: true });
 
-            // If there are no legal moves, the game is over
-            if (moves.length === 0) {
-                console.log('Game over');
-                return;
+              // If there are no legal moves, the game is over
+              if (moves.length === 0) {
+                  console.log('Game over');
+                  return;
+              }
+
+              // Choose a random move
+              const randomIndex = Math.floor(Math.random() * moves.length);
+              const randomMove = moves[randomIndex];
+
+              // Make the chosen move
+              game.move(randomMove);
+
+              board.position(game.fen())
+
+              board.destroy();
+              board = Chessboard('board1', {
+                draggable: true,
+                position: game.fen(),
+                orientation: playerColor === 'white' ? 'white' : 'black',
+                onDrop: onDrop,
+                onMouseoutSquare: onMouseoutSquare,
+                onMouseoverSquare: onMouseoverSquare,
+                onSnapEnd: onSnapEnd
+              });
+
+              board.position(game.fen());
+
+              console.log('Bot moves:', randomMove.from, 'to', randomMove.to);
+              console.log(game.ascii());
             }
-
-            // Choose a random move
-            const randomIndex = Math.floor(Math.random() * moves.length);
-            const randomMove = moves[randomIndex];
-
-            // Make the chosen move
-            game.move(randomMove);
-
-            board.position(game.fen())
-
-            board.destroy();
-            board = Chessboard('board1', {
-              draggable: true,
-              position: game.fen(),
-              orientation: playerColor === 'white' ? 'white' : 'black',
-              onDrop: onDrop,
-              onMouseoutSquare: onMouseoutSquare,
-              onMouseoverSquare: onMouseoverSquare,
-              onSnapEnd: onSnapEnd
-            });
-
-            board.position(game.fen());
-
-            console.log('Bot moves:', randomMove.from, 'to', randomMove.to);
-            console.log(game.ascii());
           }
-        }
+        }, 200);
       }
 
       // initial board configuration
