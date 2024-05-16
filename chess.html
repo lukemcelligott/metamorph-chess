@@ -106,8 +106,26 @@
       let playContent = `
         <p class="card-text">I want to play as...</p>
         <!-- player color selection -->
+        <div class="squares">
+          <div class="square white-square" id="whiteSquare"></div>
+          <div class="square black-square" id="blackSquare"></div>
+          <div class="square half-square" id="randomSquare"></div>
+        </div>
+        <p class="card-text" style="margin-top: 3%;">against...</p>
+        <!-- opponenet selection -->
         <div>
-          <p class="card-text">White, black, random</p>
+          <div class="opponent">
+            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="myself" checked>
+            <label class="form-check-label" for="flexRadioDefault1">
+              Myself
+            </label>
+          </div>
+          <div class="opponent">
+            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="computer">
+            <label class="form-check-label" for="flexRadioDefault1">
+              Computer
+            </label>
+          </div>
         </div>
         <!-- buttons -->
         <div class="ctrl-buttons">
@@ -126,7 +144,7 @@
       handleTabClick('playTab', playContent);
       handleTabClick('howToPlayTab', howToPlayContent);
 
-      let playerColor;
+      let playerColor = 'white';
       
       function handleSquareClick(squareId) {
         let square = document.getElementById(squareId);
@@ -213,12 +231,17 @@
           to: target,
           promotion: 'q'
         })
-
+        
         // check for valid move
         if (move !== null) {
           let randomPiece = getRandomPiece(game.turn()); // get a random chess piece
-          game.remove(piece); // Remove the pawn from the original position
-          game.put({ type: randomPiece, color: currentColor }, target); // place the random piece
+          game.remove(piece); // Remove the piece from the original position
+
+          if (piece == 'wK' || piece == 'bK'){
+            game.put({ type: 'k', color: currentColor }, target); // replace the king
+          } else {
+            game.put({ type: randomPiece, color: currentColor }, target); // place the random piece
+          }
 
           // reset the board with the random piece
           board.destroy();
@@ -231,12 +254,11 @@
             onMouseoverSquare: onMouseoverSquare,
             onSnapEnd: onSnapEnd
           });
-            
         } else {
             return 'snapback';
         }
 
-        board.position(game.fen())
+        board.position(game.fen());
 
         computerMove();
       }
@@ -258,64 +280,58 @@
         if (moves.length === 0) return
 
         // highlight the square they moused over
-        greySquare(square)
+        greySquare(square);
 
         // highlight the possible squares for this piece
         for (let i = 0; i < moves.length; i++) {
-          greySquare(moves[i].to)
+          greySquare(moves[i].to);
         }
       }
 
       function onMouseoutSquare (square, piece) {
-        removeGreySquares()
+        removeGreySquares();
       }
 
       function onSnapEnd () {
-        board.position(game.fen())
+        board.position(game.fen());
       }
 
       function updateStatus () {
-        let status = ''
+        let status = '';
+        let moveColor = 'White';
 
-        let moveColor = 'White'
         if (game.turn() === 'b') {
-          moveColor = 'Black'
+          moveColor = 'Black';
         }
-
         // checkmate?
         if (game.in_checkmate()) {
-          status = 'Game over, ' + moveColor + ' is in checkmate.'
+          status = 'Game over, ' + moveColor + ' is in checkmate.';
         }
-
         // draw?
         else if (game.in_draw()) {
-          status = 'Game over, drawn position'
+          status = 'Game over, drawn position';
         }
-
         // game still on
         else {
-          status = moveColor + ' to move'
-
+          status = moveColor + ' to move';
           // check?
           if (game.in_check()) {
-            status += ', ' + moveColor + ' is in check'
+            status += ', ' + moveColor + ' is in check';
           }
         }
 
-        $status.html(status)
-        $fen.html(game.fen())
-        $pgn.html(game.pgn())
+        $status.html(status);
+        $fen.html(game.fen());
+        $pgn.html(game.pgn());
       }
 
       function updateConfigWithPlayerColor() {
           config.orientation = playerColor;
       }
 
-      // start test
-
       function computerMove() {
         if (opponentType === 'computer') {
-          // Check if it's black player's turn
+          // check for turn
           if ((playerColor === 'white' && game.turn() === 'b') || (playerColor === 'black' && game.turn() === 'w')) {
             // all legal moves for the player's color
             const moves = game.moves({ verbose: true });
@@ -339,25 +355,22 @@
             board = Chessboard('board1', {
               draggable: true,
               position: game.fen(),
-              orientation: playerColor === 'w' ? 'white' : 'black',
+              orientation: playerColor === 'white' ? 'white' : 'black',
               onDrop: onDrop,
               onMouseoutSquare: onMouseoutSquare,
               onMouseoverSquare: onMouseoverSquare,
               onSnapEnd: onSnapEnd
             });
 
-            board.position(game.fen())
+            board.position(game.fen());
 
-            // debugging
             console.log('Bot moves:', randomMove.from, 'to', randomMove.to);
             console.log(game.ascii());
-            // }
           }
         }
       }
 
-      // end test
-
+      // initial board configuration
       let config = {
         draggable: true,
         onDragStart: onDragStart,
@@ -368,7 +381,8 @@
         onSnapEnd: onSnapEnd
       }
 
-      board = Chessboard('board1', config)
+      // make the board
+      board = Chessboard('board1', config);
 
       $('#startBtn').on('click', function() {
         board.start();

@@ -89,11 +89,6 @@ body {
     white-space: nowrap; /* Prevent text wrapping */
 }
 
-canvas {
-    display: block;
-    margin: auto;
-}
-
 .centered {
     position: absolute;
     top: 50%;
@@ -125,4 +120,14 @@ canvas {
 
 #startBtn {
     margin-right: 10%;
+}
+
+#board1 {
+    position: relative;
+    z-index: 1;
+  }
+
+.piece-417db {
+    position: relative;
+    z-index: 2;
 }
